@@ -5,11 +5,12 @@ const rpcUrl = process.env.RPC_URL;
 const { produce } = require('../services/kafkaConfig');
 const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
 const web3 = new Web3(httpProvider);
+const client = require('../services/config')
 
 //slow performance -- excluded
 async function getBlockWithCache(blockNumber) {
-    const client = require('../services/config');
-    require('../services/databaseConfig')
+    // const client = require('../services/config');
+    // require('../services/databaseConfig')
 
     const cacheKey = `block:${blockNumber}`;
     const cachedData = await client.get(cacheKey);
