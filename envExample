@@ -1,0 +1,4 @@
+PORT=4000
+RPC_URL=''
+REDIS_URL='redis://localhost'
+DATABASE_URL=''
