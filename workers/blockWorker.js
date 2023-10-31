@@ -1,16 +1,16 @@
-const Block = require('../models/blocks')
 const { parentPort, workerData } = require('worker_threads');
 const { Web3 } = require("web3");
-const rpcUrl = process.env.RPC_URL;
+
+const Block = require('../models/blocks')
 const { produce } = require('../services/kafkaConfig');
+
+const rpcUrl = process.env.RPC_URL;
 const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
 const web3 = new Web3(httpProvider);
-const client = require('../services/config')
+const client = require('../services/config');
 
-//slow performance
+
 async function getBlockWithCache(blockNumber) {
-    // const client = require('../services/config');
-    // require('../services/databaseConfig')
 
     const cacheKey = `block:${blockNumber}`;
     const cachedData = await client.get(cacheKey);
@@ -40,13 +40,14 @@ async function getBlockWithCache(blockNumber) {
 }
 
 
+async function main() {
+    let promises = []
+    for (let i = 0; i < workerData.blockNumbers.length; i++) {
+        promises.push(getBlockWithCache(workerData.blockNumbers[i]))
+    }
 
+    let data = await Promise.all(promises)
+    parentPort.postMessage(data)
+}
 
-getBlockWithCache(workerData.blockNumber)
-    .then((result) => {
-        console.log("Result --", result)
-        parentPort.postMessage(result);
-    })
-    .catch((error) => {
-        parentPort.postMessage({ error: error.message });
-    });
+main()

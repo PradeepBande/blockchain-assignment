@@ -1,12 +1,74 @@
 const Block = require('../models/blocks')
 const { Web3 } = require("web3");
 const rpcUrl = process.env.RPC_URL
-
 const client = require('../services/config')
 const { produce } = require('../services/kafkaConfig')
-
 const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
 const web3 = new Web3(httpProvider);
+const { Worker } = require('worker_threads')
+const totalCPUs = require('os').cpus().length
+
+//using worker start ---------------------------
+async function createWorker(blockNumbers) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(__dirname + '/../workers/blockWorker.js', {
+            workerData: { blockNumbers }
+        })
+        worker.on('message', (data) => {
+            console.log("Data --", data)
+            resolve(data)
+        })
+
+        worker.on('message', (error) => {
+            console.log("Error --", error)
+            resolve([])
+        })
+    })
+}
+
+//parallel processing
+exports.fetchBlockUsingWorker = async (req, res) => {
+    try {
+        const { start_block, limit } = req.body
+        const start = Date.now();
+        const blockNumbers = Array.from({ length: parseInt(limit) }, (_, i) => parseInt(start_block) + i);
+        let blocksFetchPromises = []
+        let total = limit / totalCPUs
+        for (let i = 0; i < totalCPUs; i++) {
+            if (i != totalCPUs - 1) {
+                let data = blockNumbers.slice(i * total, (i * total + total))
+                blocksFetchPromises.push(createWorker(data))
+            }
+            else {
+                let data = blockNumbers.slice(i * total)
+                blocksFetchPromises.push(createWorker(data))
+            }
+        }
+        const blocksData = await Promise.all(blocksFetchPromises)
+
+        const end = Date.now();
+
+        console.log("Total Time Taken: ", (end - start) / 1000);
+
+        return res.json({
+            code: 'success',
+            timeTaken: (end - start) / 1000,
+            blocksData: blocksData.flat(),
+        });
+    } catch (error) {
+        console.log("Error --", error);
+        return res.json({
+            code: 'failed'
+        });
+    }
+}
+
+//using worker End ---------------------------
+
+
+
+
+//using parralel processing start ---------------------------
 
 async function getBlockWithCache(blockNumber) {
     const cacheKey = `block:${blockNumber}`;
@@ -61,16 +123,18 @@ exports.fetchBlockData = async (req, res) => {
     }
 }
 
+//using parralel processing end ---------------------------
 
 
-//testing purpose
+//using sequential processing start ---------------------------
+
 exports.fetchBlockDataSequential = async (req, res) => {
     try {
-        const { block_number, limit } = req.body
+        const { start_block, limit } = req.body
         const start = Date.now();
         let blocks = []
         for (let i = 0; i < parseInt(limit); i++) {
-            const blockData = await web3.eth.getBlock(parseInt(block_number));
+            const blockData = await web3.eth.getBlock(parseInt(start_block));
 
             let keys = Object.keys(blockData)
             let data = {}
@@ -101,25 +165,4 @@ exports.fetchBlockDataSequential = async (req, res) => {
     }
 }
 
-
-
-// function processBlockNumber(blockNumber) {
-//     return new Promise((resolve, reject) => {
-//         const worker = new Worker(__dirname + '/../workers/blockWorker.js', {
-//             workerData: { blockNumber },
-//         });
-
-//         worker.on('message', (message) => {
-//             if (message.error) {
-//                 reject(new Error(message.error));
-//             } else {
-//                 // results.push(message);
-//                 resolve(message);
-//             }
-//         });
-
-//         worker.on('error', (error) => {
-//             reject(error);
-//         });
-//     });
-// }
+//using sequential processing End ---------------------------

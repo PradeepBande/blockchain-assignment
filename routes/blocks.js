@@ -1,12 +1,14 @@
 const express = require('express');
-const { fetchBlockData, fetchBlockDataSequential } = require('../controllers/blocks');
+const { fetchBlockData, fetchBlockDataSequential, fetchBlockUsingWorker } = require('../controllers/blocks');
 const router = express.Router();
 
-
+//Parallel processing
 router.post('/get', fetchBlockData)
 
-//testing purpose
+//sequential processing
 router.post('/get/block', fetchBlockDataSequential)
 
+//Parallel processing using workes/ multithreading
+router.post('/get-by-workers', fetchBlockUsingWorker)
 
 module.exports = router; 
