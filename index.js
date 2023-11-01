@@ -3,7 +3,7 @@ const cors = require('cors')
 require("dotenv").config();
 const cluster = require('cluster')
 
-const PORT = 5000
+const PORT = process.env.PORT || 5000
 const totalCPUs = require('os').cpus().length
 
 require('./services/databaseConfig')
