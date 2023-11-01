@@ -4,6 +4,11 @@ require("dotenv").config();
 const PORT = 5000
 const cluster = require('cluster')
 const totalCPUs = require('os').cpus().length
+require('events').EventEmitter.prototype._maxListeners = 1000;
+
+require('./services/databaseConfig')
+const { consume } = require('./services/kafkaConfig')
+const blockRoutes = require('./routes/blocks')
 
 if (cluster.isMaster) {
 
@@ -22,10 +27,6 @@ if (cluster.isMaster) {
     });
 }
 else {
-
-    require('./services/databaseConfig')
-    const { consume } = require('./services/kafkaConfig')
-    const blockRoutes = require('./routes/blocks')
 
     const app = express()
     app.use(cors({ origin: '*' }))
