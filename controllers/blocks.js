@@ -57,7 +57,7 @@ exports.fetchBlockUsingWorker = async (req, res) => {
         });
     } catch (error) {
         console.log("Error --", error);
-        return res.json({
+        return res.status(500).json({
             code: 'failed'
         });
     }
@@ -117,7 +117,7 @@ exports.fetchBlockData = async (req, res) => {
         });
     } catch (error) {
         console.log("Error --", error);
-        return res.json({
+        return res.status(500).json({
             code: 'failed'
         });
     }
@@ -159,7 +159,7 @@ exports.fetchBlockDataSequential = async (req, res) => {
         });
     } catch (error) {
         console.log("Error --", error);
-        return res.json({
+        return res.status(500).json({
             code: 'failed'
         });
     }
