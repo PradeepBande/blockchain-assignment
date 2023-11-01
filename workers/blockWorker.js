@@ -7,6 +7,7 @@ const { produce } = require('../services/kafkaConfig');
 const rpcUrl = process.env.RPC_URL;
 const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
 const web3 = new Web3(httpProvider);
+
 const client = require('../services/config');
 require('../services/databaseConfig')
 

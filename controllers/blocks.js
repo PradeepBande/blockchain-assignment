@@ -1,12 +1,13 @@
 const Block = require('../models/blocks')
 const { Web3 } = require("web3");
-const rpcUrl = process.env.RPC_URL
 const client = require('../services/config')
 const { produce } = require('../services/kafkaConfig')
-const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
-const web3 = new Web3(httpProvider);
 const { Worker } = require('worker_threads')
 const totalCPUs = require('os').cpus().length
+
+const rpcUrl = process.env.RPC_URL
+const httpProvider = new Web3.providers.HttpProvider(rpcUrl);
+const web3 = new Web3(httpProvider);
 
 //using worker start ---------------------------
 async function createWorker(blockNumbers) {
