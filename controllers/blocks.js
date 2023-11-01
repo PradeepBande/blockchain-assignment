@@ -15,13 +15,12 @@ async function createWorker(blockNumbers) {
             workerData: { blockNumbers }
         })
         worker.on('message', (data) => {
-            console.log("Data --", data)
+            worker.terminate()
             resolve(data)
         })
-
         worker.on('message', (error) => {
-            console.log("Error --", error)
-            resolve([])
+            worker.terminate()
+            reject(error)
         })
     })
 }
