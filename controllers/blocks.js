@@ -18,7 +18,7 @@ async function createWorker(blockNumbers) {
             worker.terminate()
             resolve(data)
         })
-        worker.on('message', (error) => {
+        worker.on('error', (error) => {
             worker.terminate()
             reject(error)
         })
